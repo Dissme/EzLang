@@ -1,0 +1,21 @@
+{
+  "name": "ezlang",
+  "version": "1.0.0",
+  "description": "EzLang的编译器",
+  "main": "/src/cli.js",
+  "type": "module",
+  "bin": {
+    "ezlang": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node --max-old-space-size=8192 ./src/cli.js",
+    "test:inspect": "node --max-old-space-size=8192  --inspect-brk ./src/cli.js"
+  },
+  "keywords": [],
+  "author": "344275632@qq.com",
+  "license": "ISC",
+  "devDependencies": {
+    "antlr4": "4.12.0-beta.4",
+    "llvm-bindings": "^0.4.2"
+  }
+}

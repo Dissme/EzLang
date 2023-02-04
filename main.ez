@@ -1,0 +1,3 @@
+declare printf = (msg: String) => Void;
+
+printf(msg = "hello world");
