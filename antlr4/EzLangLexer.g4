@@ -108,7 +108,8 @@ Eos: ';';
 // Comments
 MC: '/*' .*? '*/' -> channel(HIDDEN);
 SC: '//' ~[\r\n\u2028\u2029]* -> channel(HIDDEN);
-WS: [\r\n\t\u000B\u000C\u0020\u00A0\u2028\u2029]+ -> skip;
+WS: [\r\n\t\u000B\u000C\u0020\u00A0\u2028\u2029]+ -> channel(HIDDEN);
+E: . -> channel(ERROR);
 
 mode STR;
 StrEnd: '"' -> type(Quote), popMode;

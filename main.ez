@@ -1,3 +1,14 @@
-declare printf = (msg: String) => Void;
+from "std" import { printf };
 
-printf(msg = "hello world");
+export struct A {
+    a: U8
+};
+
+type B = [U8?, I32];
+
+let a: (str: [B]) => A[];
+
+const b = (c: A) {
+    let a: A;
+    => a;
+};

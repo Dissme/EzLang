@@ -6,41 +6,38 @@ options {
 }
 
 prog: importStat* progStat+ EOF;
-progStat:
-	(
-		variable
-		| typeDef
-		| struct
-		| declareDef
-		| 'export' (variable | typeDef | declareDef | struct)
-		| statment
-	) ';';
+progStat: (hoisting | 'export' hoisting | statment) ';';
+hoisting: variable | typeDef | struct | declareDef; // 提升
 importStat:
 	'from' string 'import' '{' (ID | T) (',' (ID | T))* '}' ';';
-statment: expr | ret | matchStat | loopStat | catchStat;
+statment: expr | variable | ret | matchStat | loopStat;
 
 variable: ('const' | 'static' | 'let') assignVar; // 声明变量
 assignVar:
-	ID ':' type					# declareID // 变量声明
-	| ID (':' type)? '=' expr	# assignID // 变量赋值
-	| deconstVar '=' expr		# assignDconst; // 解构赋值
+	ID ':' type									# declareID // 变量声明
+	| <assoc = right> ID (':' type)? '=' expr	# assignID // 变量赋值
+	| <assoc = right> deconstVar '=' expr		# assignDconst; // 解构赋值
 deconstVar:
 	'{' deconstField (',' deconstField)* (',' '...' ID)? '}'	# deconstDict // 解构字典/结构体
 	| '[' deconstField (',' deconstField)* (',' '...' ID)? ']'	# deconstTuple; // 解构数组/元组
 deconstField: ID | ID ':' deconstVar;
 
-declareDef: 'declare' ID '=' type | 'declare' struct; // 链接声明
-typeDef: 'type' T '=' type; // 类型约束定义
+declareDef: <assoc = right> 'declare' ID '=' type; // 链接声明
+typeDef: <assoc = right> 'type' T '=' type; // 类型约束定义
 type: // 类型约束
 	typeName												# nameType
 	| type '?'												# optionalType // 可选类型
-	| '(' (typeFnField (',' typeFnField)*)? ')' '=>' type	# fnType // 函数类型
-	| '{' typeDictField (',' typeDictField)* '}'			# dictType // 字典类型
+	| '(' type ')'											# patternType // 类型分组
 	| type '[' ']'											# arrType // 数组类型
+	| type '|' type											# unionType // 联合类型
+	| '{' typeDictField (',' typeDictField)* '}'			# dictType // 字典类型
 	| '[' type (',' type)* ']'								# tupleType // 元组类型
-	| type '|' type											# unionType; // 联合类型
+	| '(' (typeFnField (',' typeFnField)*)? ')' '=>' type	# fnType; // 函数类型
 typeFnField: id ':' type;
-typeDictField: '[' type ']' ':' type | '...' typeName;
+typeDictField:
+	id ':' type				# typeDictFieldID
+	| '[' type ']' ':' type	# typeDictFieldType
+	| '...' typeName		# typeDictFieldRest;
 typeName: // 所有类型名
 	'I8'
 	| 'I16'
@@ -63,17 +60,17 @@ typeName: // 所有类型名
 
 struct: 'struct' T '{' structField (',' structField)* '}'; // 结构体
 structField:
-	ID ':' type					# declareStructField // 定义参数
-	| ID (':' type)? '=' expr	# assignStructField
-	| '...' T					# structFieldRest; // 参数默认值
+	ID ':' type									# declareStructField // 定义参数
+	| <assoc = right> ID (':' type)? '=' expr	# assignStructField
+	| '...' T									# structFieldRest; // 参数默认值
 
 fnGroup: '(' fn (',' fn)* ')'; // 函数组
 fn:
 	'(' (param (',' param)*)? ')' '=>' expr					# arrowFn
 	| '(' (param (',' param)*)? ')' '{' (statment ';')* '}'	# blockFn; // 函数
 param:
-	id ':' type					# declareParam // 定义参数
-	| id (':' type)? '=' expr	# assignParam; // 参数默认值
+	id ':' type									# declareParam // 定义参数
+	| <assoc = right> id (':' type)? '=' expr	# assignParam; // 参数默认值
 id: 'this' | ID;
 
 expr:
@@ -106,17 +103,18 @@ expr:
 		| '>'
 		| '<='
 		| '>='
-	) expr							# relExpr // 关系运算
-	| expr ('&&' | '||') expr		# logicExpr // 逻辑运算
-	| matchField elseField?			# conditionExpr // 条件运算
-	| expr '->' expr				# pipeExpr // 管道运算
-	| <assoc = right>getOp '=' expr	# assignExpr; // 赋值运算
+	) expr								# relExpr // 关系运算
+	| expr ('&&' | '||') expr			# logicExpr // 逻辑运算
+	| 'catch' '{' (statment ';')* '}'	# catchExpr // 异常捕获
+	| matchField elseField?				# conditionExpr // 条件运算
+	| expr '->' expr					# pipeExpr // 管道运算
+	| <assoc = right> getOp '=' expr	# assignExpr; // 赋值运算
 
 getOp:
-	ID
-	| '(' expr ')'
-	| getOp '?'? '.' ID
-	| getOp ('?' '.')? '[' expr ']';
+	ID								# getOpID // ID getter
+	| '(' expr ')'					# getOpExpr // 表达式 getter
+	| getOp '?'? '.' ID				# getOpChain // 链 ID getter
+	| getOp ('?' '.')? '[' expr ']'	# getOpChainExpr; // 链 表达式 getter
 
 string: Quote stringAtom* Quote;
 stringAtom:
@@ -132,13 +130,16 @@ array: '[' (tupleField (',' tupleField)*)? ']'; // 数组
 
 dict: '{' dictField (',' dictField)* '}';
 dictField:
-	ID (':' type)? '=' expr				# dictFieldID // ID赋值
-	| '[' expr ']' (':' type)? '=' expr	# dictFieldExpr // 表达式赋值
-	| '...' getOp						# dictFieldRest; // 扩展字典
+	<assoc = right> ID (':' type)? '=' expr				# dictFieldID // ID赋值
+	| <assoc = right> '[' expr ']' (':' type)? '=' expr	# dictFieldExpr // 表达式赋值
+	| '...' getOp										# dictFieldRest; // 扩展字典
 
 call: T callee | getOp callee | call callee; // 函数调用
 callee: '(' (callField (',' callField)*)? ')'; // 函数参数
-callField: ID | id '=' expr | id '=' '?';
+callField:
+	id
+	| <assoc = right> id '=' expr
+	| <assoc = right> id '=' '?';
 
 matchStat: 'match' '{' matchField (',' matchField)* '}'; // 匹配语句
 matchField: '(' expr ')' '??' matchExpr; // 匹配条件
@@ -147,5 +148,3 @@ matchExpr: statment | '{' (statment ';')* '}';
 ret: 'break' | 'continue' | '=>' expr | 'throw' expr;
 
 loopStat: 'loop' Number ':' matchExpr; // 循环语句
-
-catchStat: 'catch' '{' (statment ';')* '}'; // 异常捕获

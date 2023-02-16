@@ -18,6 +18,12 @@ export default class EzLangParserVisitor extends antlr4.tree.ParseTreeVisitor {
 	}
 
 
+	// Visit a parse tree produced by EzLangParser#hoisting.
+	visitHoisting(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
 	// Visit a parse tree produced by EzLangParser#importStat.
 	visitImportStat(ctx) {
 	  return this.visitChildren(ctx);
@@ -108,6 +114,12 @@ export default class EzLangParserVisitor extends antlr4.tree.ParseTreeVisitor {
 	}
 
 
+	// Visit a parse tree produced by EzLangParser#patternType.
+	visitPatternType(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
 	// Visit a parse tree produced by EzLangParser#tupleType.
 	visitTupleType(ctx) {
 	  return this.visitChildren(ctx);
@@ -132,8 +144,20 @@ export default class EzLangParserVisitor extends antlr4.tree.ParseTreeVisitor {
 	}
 
 
-	// Visit a parse tree produced by EzLangParser#typeDictField.
-	visitTypeDictField(ctx) {
+	// Visit a parse tree produced by EzLangParser#typeDictFieldID.
+	visitTypeDictFieldID(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
+	// Visit a parse tree produced by EzLangParser#typeDictFieldType.
+	visitTypeDictFieldType(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
+	// Visit a parse tree produced by EzLangParser#typeDictFieldRest.
+	visitTypeDictFieldRest(ctx) {
 	  return this.visitChildren(ctx);
 	}
 
@@ -234,6 +258,12 @@ export default class EzLangParserVisitor extends antlr4.tree.ParseTreeVisitor {
 	}
 
 
+	// Visit a parse tree produced by EzLangParser#catchExpr.
+	visitCatchExpr(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
 	// Visit a parse tree produced by EzLangParser#literalExpr.
 	visitLiteralExpr(ctx) {
 	  return this.visitChildren(ctx);
@@ -282,8 +312,26 @@ export default class EzLangParserVisitor extends antlr4.tree.ParseTreeVisitor {
 	}
 
 
-	// Visit a parse tree produced by EzLangParser#getOp.
-	visitGetOp(ctx) {
+	// Visit a parse tree produced by EzLangParser#getOpExpr.
+	visitGetOpExpr(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
+	// Visit a parse tree produced by EzLangParser#getOpID.
+	visitGetOpID(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
+	// Visit a parse tree produced by EzLangParser#getOpChainExpr.
+	visitGetOpChainExpr(ctx) {
+	  return this.visitChildren(ctx);
+	}
+
+
+	// Visit a parse tree produced by EzLangParser#getOpChain.
+	visitGetOpChain(ctx) {
 	  return this.visitChildren(ctx);
 	}
 
@@ -398,12 +446,6 @@ export default class EzLangParserVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by EzLangParser#loopStat.
 	visitLoopStat(ctx) {
-	  return this.visitChildren(ctx);
-	}
-
-
-	// Visit a parse tree produced by EzLangParser#catchStat.
-	visitCatchStat(ctx) {
 	  return this.visitChildren(ctx);
 	}
 
