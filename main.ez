@@ -1,5 +1,9 @@
 from "std" import { printf };
 
+type XX = {
+    [String]: String
+};
+
 export struct A {
     a: U8
 };

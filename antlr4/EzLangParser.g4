@@ -25,20 +25,35 @@ deconstField: ID | ID ':' deconstVar;
 declareDef: <assoc = right> 'declare' ID '=' type; // 链接声明
 typeDef: <assoc = right> 'type' T '=' type; // 类型约束定义
 type: // 类型约束
-	typeName												# nameType
-	| type '?'												# optionalType // 可选类型
-	| '(' type ')'											# patternType // 类型分组
-	| type '[' ']'											# arrType // 数组类型
-	| type '|' type											# unionType // 联合类型
+	typeName		# nameType
+	| type '?'		# optionalType // 可选类型
+	| '(' type ')'	# patternType // 类型分组
+	| type '[' ']'	# arrType // 数组类型
+	// | type '|' type											# unionType // 联合类型
 	| '{' typeDictField (',' typeDictField)* '}'			# dictType // 字典类型
 	| '[' type (',' type)* ']'								# tupleType // 元组类型
 	| '(' (typeFnField (',' typeFnField)*)? ')' '=>' type	# fnType; // 函数类型
 typeFnField: id ':' type;
 typeDictField:
-	id ':' type				# typeDictFieldID
-	| '[' type ']' ':' type	# typeDictFieldType
-	| '...' typeName		# typeDictFieldRest;
+	id ':' type						# typeDictFieldID
+	| '[' typeNameAll ']' ':' type	# typeDictFieldType
+	| '...' typeName				# typeDictFieldRest;
 typeName: // 所有类型名
+	'I8'
+	| 'I16'
+	| 'I32'
+	| 'I64'
+	| 'U8'
+	| 'U16'
+	| 'U32'
+	| 'U64'
+	| 'D64'
+	| 'String'
+	| 'Bool'
+	| 'Null'
+	| 'Void'
+	| T;
+typeNameAll:
 	'I8'
 	| 'I16'
 	| 'I32'
@@ -55,8 +70,7 @@ typeName: // 所有类型名
 	| 'Dict'
 	| 'Tuple'
 	| 'Array'
-	| 'Function'
-	| T;
+	| 'Function';
 
 struct: 'struct' T '{' structField (',' structField)* '}'; // 结构体
 structField:
